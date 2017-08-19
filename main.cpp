@@ -306,9 +306,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    unique_ptr<int16_t>      sample_buffer(new int16_t[transform_size*channels]);
-    unique_ptr<double>       double_buffer(new double[transform_size]);
-    unique_ptr<fftw_complex> transform_buffer(new fftw_complex[transform_size]);
+    unique_ptr<int16_t[]>      sample_buffer(new int16_t[transform_size*channels]);
+    unique_ptr<double[]>       double_buffer(new double[transform_size]);
+    unique_ptr<fftw_complex[]> transform_buffer(new fftw_complex[transform_size]);
 
     fftw_plan plan = fftw_plan_dft_r2c_1d(
             transform_size,         // transform size
@@ -389,6 +389,7 @@ int main(int argc, char **argv) {
     }
 
     fftw_destroy_plan(plan);
+    pa_simple_free(stream);
 
     return 0;
 }
