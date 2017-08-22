@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
         Stereo
     } mode = Stereo;
 
-    unsigned transform_size = 512;
+    unsigned transform_size = 2048;
     unsigned sample_rate    = 44100;
 
     for(int argi = 1; argi < argc; argi++){
@@ -361,7 +361,7 @@ int main(int argc, char **argv) {
                     (channel == 0)? 0.05 : -0.95; // move the left channel up and the right channel down
             
             vertices.clear();
-            for(unsigned i = 0; i < transform_size/3; i++){
+            for(unsigned i = 0; i < transform_size/3; i++){ // only use the first third of the spectrum
                 const float real = (float)transform_buffer.get()[i][0];
                 const float imag = (float)transform_buffer.get()[i][1];
                 const float magnitude = // get log10'd magnitude
@@ -371,7 +371,15 @@ int main(int argc, char **argv) {
                     * 40.0f;                                // amplify by 40x (obtained through trial and error tbh)
 
                 vertices.push_back(Vertex{
-                        (i / (float)(transform_size/3) - 0.5f) * 2.0f, // x position
+                        // OpenGL coordinates range from -1 to +1.
+                        // log10(x <  1) < 0.
+                        // log10(x =  1) = 0.
+                        // log10(x = 10) = 1.
+                        // So scale the position we're at through the array by 9 and add 1
+                        // to get a log scale version between [0,1]
+                        // which when then multiply by 2 (range now [0, 2])
+                        // and add -1.0 (range now [-1, +1])
+                        -1.0f + log10f(1.0f + (i / (float)(transform_size/3)) * 9.0f) * 2.0f, // x position
                         magnitude * scale + offset // y position
                 });
             }
